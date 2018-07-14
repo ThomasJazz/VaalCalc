@@ -774,7 +774,7 @@ amulet 1000
 body_armour 1000
 default 0
 $
-V2MaxPowerChargesCorrupted60	+1 to Maximum Power Charges
+V2MaxPowerChargesCorrupted60	60	+1 to Maximum Power Charges
 helmet 1000
 default 0
 $
@@ -970,4 +970,3 @@ $
 V2WrathSkillCorrupted	45	Grants Level 21 Wrath Skill
 ring 500
 default 0
-$
