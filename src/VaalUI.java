@@ -30,6 +30,9 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
     public void start(Stage primaryStage) throws Exception {
         driver = new Driver();
 
+        // ideally these layout settings would not be hard coded like this. In the future I'd like to change to using
+        // a VBox so that we can create columns and align the elements accordingly.
+
         // update button
         update = new Button("Update");
         update.setOnAction(this);
@@ -40,8 +43,8 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
         // calculate button
         calculate = new Button("Calculate");
         calculate.setOnAction(this);
-        calculate.setLayoutX(159);
-        calculate.setLayoutY(493);
+        calculate.setLayoutX(164);
+        calculate.setLayoutY(500);
         calculate.setId("calculate-button");
 
         // reset button
@@ -85,13 +88,13 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
         initInv.setTooltip(initTool);
         initInv.setPrefWidth(55);
         initInv.setLayoutY(365);
-        initInv.setLayoutX(262);
+        initInv.setLayoutX(270);
 
         //corrVal textfield
         corrVal = new TextField();
         corrVal.setPrefWidth(55);
         corrVal.setLayoutY(399);
-        corrVal.setLayoutX(262);
+        corrVal.setLayoutX(270);
         corrVal.setTooltip(corrTool);
 
         // implicit combobox
@@ -157,7 +160,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
     public void handle(ActionEvent event) {
         // Our alert that gets called when there is an error in the
         Alert updateAlert = new Alert(Alert.AlertType.ERROR);
-        updateAlert.setTitle("Missing information");
+        updateAlert.setTitle("Something isn't right here...");
         updateAlert.setHeaderText(null);
 
         // shows when the user has failed to select an implicit stat for calculation
@@ -184,7 +187,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
             }
 
             // check for selected basetype
-            if (!basetypes.getValue().equals("---") && ilvlInt > 0){ // if they have successfully chosen a basetype
+            if (!basetypes.getValue().equals("-Item Basetype-") && !basetypes.getValue().equals("---")){
                 list = FXCollections.observableArrayList(driver.analyze(basetypes.getValue(), ilvlInt));
                 implicit.setItems(list); // set the list of implicits to display in the dropdown box
                 implicit.getSelectionModel().select("--Select a desired implicit--");

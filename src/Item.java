@@ -46,6 +46,8 @@ public class Item {
 			tags.addAll(Arrays.asList("claw", "weapon", "one_hand_weapon", "default"));
 		} else if (baseType.equals("dagger")){
 			tags.addAll(Arrays.asList("dagger", "weapon", "one_hand_weapon", "default"));
+		} else if (baseType.equals("fishing rod")){
+			tags.addAll(Arrays.asList("fishing_rod"));
 		} else if (baseType.equals("gloves")){
 			tags.addAll(Arrays.asList("gloves", "default"));
 		} else if (baseType.equals("helmet")){

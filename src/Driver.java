@@ -43,13 +43,11 @@ public class Driver {
 
 					// splitting the line and grabbing data
 					String[] info = line.split("\t");
-					System.out.println(line);
 					name = info[0];
 					implicitilvl = Integer.parseInt(info[1]);
 					effect = info[2];
 
 				} else if (!line.equals(null) && !line.equals("$")){
-
 					String[] tag = line.split(" ");
 					int weight = Integer.parseInt(tag[1]);
 
