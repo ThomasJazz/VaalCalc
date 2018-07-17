@@ -88,7 +88,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
                         implicit.getSelectionModel().select("--Select a desired implicit--");
                     } catch (NumberFormatException e){
                         implicit.getSelectionModel().select("-Insufficient Item Information-");
-                        implicit.setItems(null);
+                        implicit.getItems().clear();
                     }
                 }
             }
@@ -162,7 +162,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         scene.setFill(bg);
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image(VaalUI.class.getResourceAsStream("images/chaosvaal.png")));
-        primaryStage.setTitle("VaalCalc v1.2");
+        primaryStage.setTitle("VaalCalc v1.0");
         primaryStage.setResizable(false); // cannot be resized
         scene.getStylesheets().addAll(this.getClass().getResource("/Stylesheet.css").toExternalForm());
         primaryStage.show();
@@ -174,7 +174,12 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         Alert implicitAlert = new Alert(Alert.AlertType.ERROR);
         implicitAlert.setTitle("Missing Implicit Stat");
         implicitAlert.setHeaderText(null);
-        implicitAlert.setContentText("Please select the implicit stat you want to find the probability of.");
+        implicitAlert.setContentText("Please select an implicit stat");
+
+        // when the user is missing information about the item basetype or ilvl
+        Alert infoError = new Alert(Alert.AlertType.ERROR);
+        infoError.setTitle("Something Went Wrong");
+        infoError.setHeaderText(null);
 
         // shows when user has entered illegal value in one of the currency information fields
         Alert inputAlert = new Alert(Alert.AlertType.ERROR);
@@ -200,31 +205,46 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
                 return;
 
         } else if (event.getSource() == calculate) { // if the user clicks the calculate button at the bottom
+            String errorMsg = "";
+            if (implicit.getValue().equals("--Select a desired implicit--")) {
+                implicitAlert.showAndWait();
+                return;
+            } else if (implicit.getValue().equals("-Insufficient Item Information-")) {
+                if (basetypes.getValue().equals("-Item Basetype-")) {
+                    errorMsg += "-No item basetype selected\n";
+                }
+
+                try {
+                    ilvlInt = Integer.parseInt(ilvl.getText());
+                } catch (NumberFormatException e) {
+                    errorMsg += "-No item level entered";
+                }
+                infoError.setContentText(errorMsg);
+                infoError.showAndWait();
+                return;
+            }
+
             try {
                 Integer.parseInt(initInv.getText()); // check to make sure the field isn't empty
                 Integer.parseInt(corrVal.getText());
 
-                if (implicit.getValue().equals("--Select a desired implicit--")) {
-                    implicitAlert.showAndWait();
-                }
-
                 corrValInt = Double.valueOf(corrVal.getText());
                 initInvInt = Double.valueOf(initInv.getText());
+
                 if (corrValInt > 0 && initInvInt > 0) { // if both of the fields have a value greater than 0
                     driver.setPrefImp (implicit.getValue()); // send the implicit we are looking for to the driver
                     driver.setEcon(initInvInt, corrValInt);
-                    showSummary();
-                } else {
-                    inputAlert.showAndWait();
                 }
             } catch (NumberFormatException ex) {
-                inputAlert.showAndWait();
+
             }
+
+            showSummary();
         } else if (event.getSource() == reset) { // if the reset button is clicked
             basetypes.getSelectionModel().select("-Item Basetype-");
 
             list = FXCollections.observableArrayList(driver.analyze(basetypes.getValue(), ilvlInt));
-            implicit.setItems(list); // set the list of implicits to display in the dropdown box
+            implicit.getItems().clear(); // set the list of implicits to display in the dropdown box
             implicit.getSelectionModel().select("-Insufficient Item Information-");
 
             ilvl.clear();
@@ -238,38 +258,49 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
      * surrounding their item base and implicit.
      */
     public void showSummary(){
-        DecimalFormat df = new DecimalFormat("##.###%"); // formatting of percent signs
-        DecimalFormat currFormat = new DecimalFormat(".##"); // for formatting the profitability
-        double percent = (driver.getUserItem().getChance(driver.getPrefImp())*1/6);
-        double ret = (((double)100 / (1/percent)) * corrValInt) / (initInvInt*100); // expected returns per corruption
-
         Alert calcAlert = new Alert(Alert.AlertType.INFORMATION);
         calcAlert.setTitle("Calculation Results");
         calcAlert.setHeaderText(null);
-        calcAlert.setContentText("Your selected implicit stat has a {" + df.format(percent) + "} chance of rolling.\n"
-                + "For every chaos spent, you can expect a return of {" + currFormat.format(ret) +
-                "} chaos (above 1 means you should make money). \n" +
-                "It will take an average of " + (double)1/percent + " attempts to roll your desired implicit.");
 
-        String possibleImp = driver.getUserItem().toString();
-        Label label = new Label("Probabilities of all possible corruptions: ");
+        try {
+            // if either field is empty we wont display the information below, just the overall summary
+            Integer.parseInt(initInv.getText());
+            Integer.parseInt(corrVal.getText());
 
-        TextArea potRolls = new TextArea(possibleImp); // setting up the stat summary area
-        potRolls.setEditable(false);
-        potRolls.setWrapText(true);
+            // economy information
+            DecimalFormat df = new DecimalFormat("##.###%"); // formatting of percent signs
+            DecimalFormat currFormat = new DecimalFormat(".##"); // for formatting the profitability
+            double percent = (driver.getUserItem().getChance(driver.getPrefImp())*1/6);
+            double ret = (((double)100 / (1/percent)) * corrValInt) / (initInvInt*100); // expected returns per corruption
 
-        potRolls.setMaxWidth(Double.MAX_VALUE);
-        potRolls.setMaxHeight(Double.MAX_VALUE);
-        GridPane.setVgrow(potRolls, Priority.ALWAYS);
-        GridPane.setHgrow(potRolls, Priority.ALWAYS);
+            calcAlert.setContentText("Your selected implicit stat has a {" + df.format(percent) + "} chance of rolling.\n"
+                    + "For every chaos spent, you can expect a return of {" + currFormat.format(ret) +
+                    "} chaos (above 1 means you should make money). \n" +
+                    "It will take an average of " + (double)1/percent + " attempts to roll your desired implicit.");
+        } catch (NumberFormatException e) {
 
-        GridPane rollBox = new GridPane();
-        rollBox.setMaxWidth(Double.MAX_VALUE);
-        rollBox.add(label, 0, 0);
-        rollBox.add(potRolls, 0, 1);
+        } finally {
+            String possibleImp = driver.getUserItem().toString();
+            Label label = new Label("Probabilities of all possible corruptions: ");
 
-        // Set expandable Exception into the dialog pane.
-        calcAlert.getDialogPane().setExpandableContent(rollBox);
-        calcAlert.showAndWait();
+            TextArea potRolls = new TextArea(possibleImp); // setting up the stat summary area
+            potRolls.setEditable(false);
+            potRolls.setWrapText(true);
+
+            potRolls.setMaxWidth(Double.MAX_VALUE);
+            potRolls.setMaxHeight(Double.MAX_VALUE);
+            GridPane.setVgrow(potRolls, Priority.ALWAYS);
+            GridPane.setHgrow(potRolls, Priority.ALWAYS);
+
+            GridPane rollBox = new GridPane();
+            rollBox.setMaxWidth(Double.MAX_VALUE);
+            rollBox.add(label, 0, 0);
+            rollBox.add(potRolls, 0, 1);
+
+            // Set expandable Exception into the dialog pane.
+            calcAlert.getDialogPane().setExpandableContent(rollBox);
+            calcAlert.getDialogPane().setExpanded(true);
+            calcAlert.showAndWait();
+        }
     }
 }

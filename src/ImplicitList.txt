@@ -970,3 +970,43 @@ $
 V2WrathSkillCorrupted	45	Grants Level 21 Wrath Skill
 ring 500
 default 0
+$
+V2CorruptedBloodImmunityCorrupted	1	Corrupted Blood cannot be inflicted on you
+jewel 1000
+default 0
+$
+V2HinderImmunityCorrupted	1	You cannot be Hindered
+jewel 1000
+default 0
+$
+V2IncreasedAilmentEffectOnEnemiesCorrupted	1	(5-7)% increased Effect of non-Damaging Ailments on Enemies
+jewel 1000
+default 0
+$
+V2IncreasedAreaOfEffectCorrupted	1	(4-5)% increased Area of Effect
+jewel 1000
+default 0
+$
+V2IncreasedCriticalStrikeChanceCorrupted_	1	(8-10)% increased Global Critical Strike Chance
+jewel 1000
+default 0
+$
+V2IncreasedDamageJewelCorrupted___	1	(4-5)% increased Damage
+jewel 1000
+default 0
+$
+V2MaimImmunityCorrupted	1	You cannot be Maimed
+jewel 1000
+default 0
+$
+V2MinionDamageCorrupted	1	Minions deal (4-5)% increased Damage
+jewel 1000
+default 0
+$
+V2ReducedManaReservationCorrupted	0	1% reduced Mana Reserved
+jewel 1000
+default 0
+$
+V2SilenceImmunityJewelCorrupted	0	You cannot be Cursed with Silence
+jewel 1000
+default 0
