@@ -232,12 +232,13 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
                 initInvInt = Double.valueOf(initInv.getText());
 
                 if (corrValInt > 0 && initInvInt > 0) { // if both of the fields have a value greater than 0
-                    driver.setPrefImp (implicit.getValue()); // send the implicit we are looking for to the driver
                     driver.setEcon(initInvInt, corrValInt);
                 }
             } catch (NumberFormatException ex) {
 
             }
+
+            driver.setPrefImp (implicit.getValue()); // send the implicit we are looking for to the driver
 
             showSummary();
         } else if (event.getSource() == reset) { // if the reset button is clicked
@@ -258,6 +259,8 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
      * surrounding their item base and implicit.
      */
     public void showSummary(){
+
+
         Alert calcAlert = new Alert(Alert.AlertType.INFORMATION);
         calcAlert.setTitle("Calculation Results");
         calcAlert.setHeaderText(null);
@@ -269,8 +272,8 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
 
             // economy information
             DecimalFormat df = new DecimalFormat("##.###%"); // formatting of percent signs
-            DecimalFormat currFormat = new DecimalFormat(".##"); // for formatting the profitability
             double percent = (driver.getUserItem().getChance(driver.getPrefImp())*1/6);
+            DecimalFormat currFormat = new DecimalFormat(".##"); // for formatting the profitability
             double ret = (((double)100 / (1/percent)) * corrValInt) / (initInvInt*100); // expected returns per corruption
 
             calcAlert.setContentText("Your selected implicit stat has a {" + df.format(percent) + "} chance of rolling.\n"
@@ -278,8 +281,13 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
                     "} chaos (above 1 means you should make money). \n" +
                     "It will take an average of " + (double)1/percent + " attempts to roll your desired implicit.");
         } catch (NumberFormatException e) {
+            DecimalFormat df = new DecimalFormat("##.###%"); // formatting of percent signs
+            double percent = (driver.getUserItem().getChance(driver.getPrefImp())*1/6);
 
+            calcAlert.setContentText("Your selected implicit stat has a {" + df.format(percent) + "} chance of rolling.\n" +
+                    "It will take an average of " + (double)1/percent + " attempts to roll your desired implicit.");
         } finally {
+
             String possibleImp = driver.getUserItem().toString();
             Label label = new Label("Probabilities of all possible corruptions: ");
 
