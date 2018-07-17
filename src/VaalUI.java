@@ -9,13 +9,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.Group;
 import java.text.DecimalFormat;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.control.TextArea;
 
-public class VaalUI extends Application implements EventHandler<ActionEvent>{
+public class VaalUI extends Application implements EventHandler<ActionEvent> {
     private ComboBox<String> basetypes, implicit;
-    private Button update, calculate, reset;
+    private Button calculate, reset;
     private Label ilvlLabel, initInvLabel, corrValLabel;
     private TextField ilvl, initInv, corrVal;
     private int ilvlInt = 0;
@@ -29,16 +30,8 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
     @Override
     public void start(Stage primaryStage) throws Exception {
         driver = new Driver();
-
         // ideally these layout settings would not be hard coded like this. In the future I'd like to change to using
-        // a VBox so that we can create columns and align the elements accordingly.
-
-        // update button
-        update = new Button("Update");
-        update.setOnAction(this);
-        update.setLayoutY(265);
-        update.setLayoutX(161);
-        update.setId("update-button");
+        // a GridPane so that we can create columns and align the elements accordingly.
 
         // calculate button
         calculate = new Button("Calculate");
@@ -68,20 +61,38 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
         ilvlLabel.setLayoutY(210);
 
         // initInv Label
-        initInvLabel = new Label("Initial Cost of Item");
+        initInvLabel = new Label("Initial Cost of Item (chaos)");
         initInvLabel.setLayoutY(364);
-        initInvLabel.setLayoutX(98);
+        initInvLabel.setLayoutX(65);
 
         //corrVal label
         corrValLabel = new Label("Value w/ Desired Corruption");
         corrValLabel.setLayoutY(400);
-        corrValLabel.setLayoutX(26);
+        corrValLabel.setLayoutX(49);
 
         // ilvl textField
         ilvl = new TextField();
         ilvl.setPrefWidth(60);
         ilvl.setLayoutX(265);
         ilvl.setLayoutY(210);
+        // auto update the list of possible implicits whenever a key is pressed
+        ilvl.setOnKeyReleased(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (!basetypes.getValue().equals("-Item Basetype-")) {
+                    try {
+                        ilvlInt = Integer.parseInt(ilvl.getText()); // set to integer representation of ilvl field
+
+                        list = FXCollections.observableArrayList(driver.analyze(basetypes.getValue(), ilvlInt));
+                        implicit.setItems(list); // set the list of implicits to display in the dropdown box
+                        implicit.getSelectionModel().select("--Select a desired implicit--");
+                    } catch (NumberFormatException e){
+                        implicit.getSelectionModel().select("-Insufficient Item Information-");
+                        implicit.setItems(null);
+                    }
+                }
+            }
+        });
 
         // initInv textfield
         initInv = new TextField();
@@ -100,7 +111,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
         // implicit combobox
         implicit = new ComboBox<>();
         implicit.setPrefWidth(230);
-        implicit.setLayoutY(310);
+        implicit.setLayoutY(270);
         implicit.setLayoutX(93);
         implicit.getSelectionModel().select("-Insufficient Item Information-");
 
@@ -113,6 +124,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
         basetypes.setLayoutX(70);
         basetypes.setLayoutY(208);
         basetypes.getSelectionModel().select("-Item Basetype-");
+        basetypes.setOnAction(this);
         basetypes.getItems().addAll( // user can either search for or select one of the options below
                 "Amulet",
                 "Body Armour",
@@ -141,7 +153,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
         Group group = new Group();
         group.setId("pane");
         group.setLayoutY(0);
-        group.getChildren().addAll(basetypes, ilvlLabel, ilvl, implicit, update);
+        group.getChildren().addAll(basetypes, ilvlLabel, ilvl, implicit);
         group.getChildren().addAll(initInvLabel, initInv, corrVal, corrValLabel);
         group.getChildren().addAll(calculate, reset);
 
@@ -158,11 +170,6 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
 
     @Override
     public void handle(ActionEvent event) {
-        // Our alert that gets called when there is an error in the
-        Alert updateAlert = new Alert(Alert.AlertType.ERROR);
-        updateAlert.setTitle("Something isn't right here...");
-        updateAlert.setHeaderText(null);
-
         // shows when the user has failed to select an implicit stat for calculation
         Alert implicitAlert = new Alert(Alert.AlertType.ERROR);
         implicitAlert.setTitle("Missing Implicit Stat");
@@ -175,37 +182,22 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
         inputAlert.setHeaderText(null);
         inputAlert.setContentText("All values entered must be a number greater than 0");
 
-        if (event.getSource() == update) { // if the 'update' button has been clicked
-            int alertMsg = 0;
-            // check item level field value
-            try {
-                //Integer.parseInt(ilvl.getText()); // if there is no number in ilvl, this will catch it
-                ilvlInt = Integer.parseInt(ilvl.getText()); // set to integer representation of ilvl field
+        // if there is an update to either the basetype or ilvl, this will auto update the selection options accordingly
+        if (event.getSource() == basetypes || event.getSource() == ilvl) {
+            if (!basetypes.getValue().equals("-Item Basetype-")) {
+                try {
+                    ilvlInt = Integer.parseInt(ilvl.getText()); // set to integer representation of ilvl field
 
-            } catch (NumberFormatException ex) { // if there is no number in the
-                alertMsg += 1;
-            }
+                    if (ilvlInt != 0) {
+                        list = FXCollections.observableArrayList(driver.analyze(basetypes.getValue(), ilvlInt));
+                        implicit.setItems(list); // set the list of implicits to display in the dropdown box
+                        implicit.getSelectionModel().select("--Select a desired implicit--");
+                    }
+                } catch (NumberFormatException e){
 
-            // check for selected basetype
-            if (!basetypes.getValue().equals("-Item Basetype-") && !basetypes.getValue().equals("---")){
-                list = FXCollections.observableArrayList(driver.analyze(basetypes.getValue(), ilvlInt));
-                implicit.setItems(list); // set the list of implicits to display in the dropdown box
-                implicit.getSelectionModel().select("--Select a desired implicit--");
-            } else { // if there is no selection for item base type
-                alertMsg += 2;
-            }
-
-            // change alert message accordingly
-            if (alertMsg == 1)
-                updateAlert.setContentText("Invalid or missing item level.");
-            else if (alertMsg == 2)
-                updateAlert.setContentText("Missing item basetype.");
-            else if (alertMsg == 3)
-                updateAlert.setContentText("Invalid or missing item level.\nMissing item basetype.");
-
-            // show our alert
-            if (alertMsg != 0)
-                updateAlert.showAndWait();
+                }
+            } else
+                return;
 
         } else if (event.getSource() == calculate) { // if the user clicks the calculate button at the bottom
             try {
@@ -228,9 +220,13 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
             } catch (NumberFormatException ex) {
                 inputAlert.showAndWait();
             }
-        } else if (event.getSource() == reset) {
+        } else if (event.getSource() == reset) { // if the reset button is clicked
             basetypes.getSelectionModel().select("-Item Basetype-");
+
+            list = FXCollections.observableArrayList(driver.analyze(basetypes.getValue(), ilvlInt));
+            implicit.setItems(list); // set the list of implicits to display in the dropdown box
             implicit.getSelectionModel().select("-Insufficient Item Information-");
+
             ilvl.clear();
             corrVal.clear();
             initInv.clear();
@@ -251,7 +247,8 @@ public class VaalUI extends Application implements EventHandler<ActionEvent>{
         calcAlert.setTitle("Calculation Results");
         calcAlert.setHeaderText(null);
         calcAlert.setContentText("Your selected implicit stat has a {" + df.format(percent) + "} chance of rolling.\n"
-                + "For every chaos spent, you can expect a return of {" + currFormat.format(ret) + "} chaos (above 1 means you should make money). \n" +
+                + "For every chaos spent, you can expect a return of {" + currFormat.format(ret) +
+                "} chaos (above 1 means you should make money). \n" +
                 "It will take an average of " + (double)1/percent + " attempts to roll your desired implicit.");
 
         String possibleImp = driver.getUserItem().toString();

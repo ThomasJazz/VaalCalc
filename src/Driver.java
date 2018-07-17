@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.io.*;
 
-
 public class Driver {
 	private ArrayList<Implicit> implicits;
 	private ArrayList<String> strImplicits;
