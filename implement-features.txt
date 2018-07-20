@@ -1,1 +1,3 @@
-
+Economy (Should probably have its own tab with the number of different features I could implement for it):
+- Resale value for items that hold value through corruptions
+- Multiple corruption input so if there is more than one corruption worth getting, you can account for that
