@@ -2,23 +2,36 @@ public class Implicit {
 	private String name;
 	private String effect;
 	private int weight;
+	private int ilvl;
 
-	Implicit(String name, String effect, int weight){
+	Implicit(String name, String effect, int weight, int ilvl) {
 		this.name = name;
 		this.effect = effect;
 		this.weight = weight;
+		this.ilvl = ilvl;
 	}
 
-	public String toString(){
+	public String getEffect() {
 		return effect;
 	}
-	public int getWeight(){
+
+	public String getName() {
+		return name;
+	}
+
+	public int getWeight() {
 		return weight;
 	}
-	public boolean equals(String input){
+
+	public int getIlvl() {
+		return ilvl;
+	}
+
+	public boolean equals(String input) {
 		if (input.equals(effect))
 			return true;
 		else
 			return false;
 	}
+
 }
