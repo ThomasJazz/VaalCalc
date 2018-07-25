@@ -37,7 +37,6 @@ public class Driver {
 
 
 			while ((line = reader.readLine()) != null){
-				// **** LAST WORKED ON THIS. NEED
 				if (line.equals("$")) {
 					line = reader.readLine();
 

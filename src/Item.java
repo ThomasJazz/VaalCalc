@@ -7,6 +7,7 @@ public class Item {
 	private ArrayList<String> tags; // the tags that apply to the given type of weapon
 	private String baseType = "";
 	private int poolSize = 0, maxIlvl = 0;
+	private double resaleChance;
 
 
 	Item(String baseType) {
@@ -154,5 +155,17 @@ public class Item {
 
 	public String getBaseType() {
 		return baseType;
+	}
+
+	public double getResaleChance(){
+		switch (baseType) {
+			case "amulet":
+			case "belt":
+			case "ring":
+			case "quiver":
+				return 0.5;
+			default:
+				return 0.25;
+		}
 	}
 }

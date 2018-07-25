@@ -8,23 +8,23 @@ import javafx.scene.image.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.Group;
-import java.text.DecimalFormat;
-
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.control.TextArea;
+import javafx.stage.Popup;
+import java.text.DecimalFormat;
 
 public class VaalUI extends Application implements EventHandler<ActionEvent> {
     private ComboBox<String> basetypes, implicits;
-    private Button calculate, reset;
+    private Button calculate, reset, info;
     private Label initInvLabel, corrValLabel, resaleLabel;
     private TextField initInv, corrVal, resaleVal;
     private Double initInvDoub, corrValDoub, resaleValDoub;
     private Driver driver;
-    private Image ui;
+    private Image ui, infobg;
     private ImagePattern bg;
     private ObservableList<String> list;
-    private Tooltip initTool, corrTool;
+    private Tooltip initTool, corrTool, resTool;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -46,9 +46,41 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         reset.setLayoutY(565);
         reset.setId("reset-button");
 
+        // info background image
+        infobg = new Image(VaalUI.class.getResource("images/info.png").toExternalForm(), 32,32,true,true);
+        ImageView infoView = new ImageView(infobg);
+        infoView.setFitWidth(24);
+        infoView.setFitHeight(24);
+
+        // popup that info button will open
+        final Popup infoPop = new Popup();
+        infoPop.setX(300);
+        infoPop.setY(200);
+        infoPop.getContent().addAll(new Button("Test"));
+
+        // info button
+        info = new Button();
+        info.setLayoutX(5);
+        info.setLayoutY(5);
+        info.setPrefHeight(24);
+        info.setPrefWidth(24);
+        info.setGraphic(infoView);
+        /*
+        info.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent event) {
+                infoPop.show(primaryStage);
+            }
+        });
+        */
+        info.setId("info-button");
+
+
         // creating tooltips to help the user understand what information is being asked for
         initTool = new Tooltip("The value of your item with your selected implicits (in chaos).");
         corrTool = new Tooltip("The cost of purchasing an uncorrupted version of the item you are attempting to vaal (in chaos).");
+        resTool = new Tooltip("How much you can resell your item for, assuming the outcome of the corruption was no change.");
+        resTool.setWrapText(true);
+        resTool.setPrefWidth(200);
         initTool.setWrapText(true);
         initTool.setPrefWidth(200);
         corrTool.setWrapText(true);
@@ -83,7 +115,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         resaleVal.setPrefWidth(55);
         resaleVal.setLayoutY(433);
         resaleVal.setLayoutX(270);
-        resaleVal.setTooltip(corrTool);
+        resaleVal.setTooltip(resTool);
 
         //resale label
         resaleLabel = new Label("Corrupted resale value");
@@ -138,7 +170,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         group.setLayoutY(0);
         group.getChildren().addAll(basetypes, implicits);
         group.getChildren().addAll(initInvLabel, initInv, corrVal, corrValLabel, resaleLabel, resaleVal);
-        group.getChildren().addAll(calculate, reset);
+        group.getChildren().addAll(calculate, reset, info);
 
         // Scene set-up and assignment
         Scene scene = new Scene(group, 400, 600);
@@ -248,8 +280,8 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         Implicit tempImp = driver.getPrefImp();
 
         // get our best and worst case data
-        double worstPct = (tempBase.getWorstChance(tempImp)*1/6);
-        double bestPct = (tempBase.getBestChance(tempImp,tempImp.getIlvl())*1/6);
+        double worstPct = (tempBase.getWorstChance(tempImp)*1/4);
+        double bestPct = (tempBase.getBestChance(tempImp,tempImp.getIlvl())*1/4);
         double bestTries = ((double)1/bestPct);
         double worstTries = ((double)1/worstPct);
 
@@ -265,8 +297,10 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         if (hasNumber(initInv) && hasNumber(corrVal)) {
             double expRet = 0;
 
-            if (hasNumber(resaleVal)) // if the user enters a resale value
-                 expRet = (((double)100 / (1/bestPct)) * corrValDoub) / ((initInvDoub - resaleValDoub) *100);
+            // if the user enters a resale value we check to see likelihood of being able to resell
+            if (hasNumber(resaleVal))
+                expRet = (((double) 100 / (1 / bestPct)) * corrValDoub) / ((initInvDoub -
+                        (resaleValDoub * tempBase.getResaleChance())) * 100);
              else
                 expRet = (((double)100 / (1/bestPct)) * corrValDoub) / (initInvDoub  *100);
 
