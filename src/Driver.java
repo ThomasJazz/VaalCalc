@@ -2,11 +2,11 @@ import java.util.ArrayList;
 import java.io.*;
 
 public class Driver {
-	private ArrayList<Implicit> implicits;
 	private ArrayList<String> strImplicits;
 	private VaalUI ui;
-	private Item userItem;
-	private String prefImp;
+	private Item baseItem;
+	private Implicit prefImp;
+	private int implicitilvl;
 
 	public static void main(String[] args){
 		new Driver().run(args);
@@ -21,22 +21,21 @@ public class Driver {
 	 * Item level
 	 * Base type
 	 */
-	public ArrayList<String> analyze(String type, int ilvl){
+	public ArrayList<String> analyze(String basetype){
 		strImplicits = new ArrayList<>();
 		// make a new item based on the user input
-		userItem = new Item(type, ilvl);
+		baseItem = new Item(basetype);
 
 		try {
 			// File reading
-			BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("ImplicitList.txt")));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().
+					getResourceAsStream("ImplicitList.txt")));
 
 			String line;
 			String name = "";
 			String effect = "";
-			int implicitilvl = 0;
 
 			while ((line = reader.readLine()) != null){
-
 				if (line.equals("$")) {
 					line = reader.readLine();
 
@@ -50,8 +49,8 @@ public class Driver {
 					String[] tag = line.split(" ");
 					int weight = Integer.parseInt(tag[1]);
 
-					if (userItem.getTags().contains(tag[0]) && weight != 0 && ilvl >= implicitilvl) {
-						userItem.addRoll(name, effect, weight);
+					if (baseItem.getTags().contains(tag[0]) && weight != 0) {
+						baseItem.addRoll(name, effect, weight, implicitilvl);
 					}
 				} // end else-if
 				if (line == null)
@@ -72,29 +71,70 @@ public class Driver {
 		}
 
 		// string representation of all the possible implicits to be used in combo box
-		for (Implicit imp: userItem.getPotRolls())
-			strImplicits.add(imp.toString());
+		for (Implicit imp: baseItem.getPotRolls())
+			strImplicits.add(imp.getEffect());
 		return strImplicits;
-	}
-
-	public ArrayList<Implicit> getImplicits(){
-		return implicits;
 	}
 
 	public void setEcon(Double initVal, Double corrVal){
 
 	}
+
 	// sets the user's preffered implicit stat so we can compare later.
 	public void setPrefImp(String input){
-		prefImp = input;
+		Implicit temp;
+		try {
+			// File reading
+			BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().
+					getResourceAsStream("ImplicitList.txt")));
+
+			String line;
+			String name = "";
+			String effect = "";
+			int ilvl = 0;
+
+			while ((line = reader.readLine()) != null){
+
+				if (line.equals("$")) {
+					line = reader.readLine();
+
+					// splitting the line and grabbing data
+					String[] info = line.split("\t");
+
+					if (info[2].equals(input)) { // if we found our preferred implicit in the text file
+						name = info[0];
+						ilvl = Integer.parseInt(info[1]);
+						effect = info[2];
+
+						while (!line.equals("$")) { // now we search for the weighting so we can make prefImp
+							line = reader.readLine();
+
+							String[] tag = line.split(" ");
+							int weight = Integer.parseInt(tag[1]);
+
+							if (baseItem.getTags().contains(tag[0]) && weight != 0) {
+								prefImp = new Implicit(name, effect, weight, ilvl);
+								return;
+							}
+						}
+					}
+				}
+
+				if (line == null)
+					break;
+			} // end of while
+		} catch (FileNotFoundException e) {
+			e.getMessage();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public String getPrefImp(){
+	public Implicit getPrefImp(){
 		return prefImp;
 	}
 
-	public Item getUserItem(){
-		return userItem;
+	public Item getBaseItem(){
+		return baseItem;
 	}
 }
-

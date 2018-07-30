@@ -6,17 +6,16 @@ public class Item {
 	private ArrayList<Implicit> potRolls;
 	private ArrayList<String> tags; // the tags that apply to the given type of weapon
 	private String baseType = "";
-	private int poolSize = 0;
-	private int ilvl;
+	private int poolSize = 0, maxIlvl = 0;
+	private double resaleChance;
 
-	Item(String baseType, int ilvl) {
+
+	Item(String baseType) {
 		tags = new ArrayList<>();
 		potRolls = new ArrayList<>();
-		this.ilvl = ilvl;
 		baseType.toLowerCase();
 		this.baseType = baseType;
 		setTags(baseType);
-
 	}
 
 	public ArrayList<String> getTags() {
@@ -52,6 +51,8 @@ public class Item {
 			tags.addAll(Arrays.asList("gloves", "default"));
 		} else if (baseType.equals("helmet")) {
 			tags.addAll(Arrays.asList("helmet", "default"));
+		} else if (baseType.equals("jewel") || baseType.equals("abyss jewel")) { // jewels and abyss jewels share same rolls
+			tags.addAll(Arrays.asList("jewel", "default"));
 		} else if (baseType.equals("shield")) {
 			tags.addAll(Arrays.asList("shield", "default"));
 		} else if (baseType.equals("one hand axe")) {
@@ -60,8 +61,6 @@ public class Item {
 			tags.addAll(Arrays.asList("mace", "weapon", "one_hand_weapon", "default"));
 		} else if (baseType.equals("one hand sword")) {
 			tags.addAll(Arrays.asList("sword", "weapon", "one_hand_weapon", "default"));
-		} else if (baseType.equals("jewel")) {
-			tags.add("jewel");
 		} else if (baseType.equals("quiver")) {
 			tags.addAll(Arrays.asList("quiver", "default"));
 		} else if (baseType.equals("ring")) {
@@ -85,9 +84,11 @@ public class Item {
 		return tags;
 	}
 
-	public void addRoll(String name, String effect, int weight) {
-		potRolls.add(new Implicit(name, effect, weight));
+	public void addRoll(String name, String effect, int weight, int ilvl) {
+		potRolls.add(new Implicit(name, effect, weight, ilvl));
 		poolSize += weight;
+		if (ilvl > maxIlvl)
+			maxIlvl = ilvl;
 	}
 
 	/**
@@ -101,10 +102,26 @@ public class Item {
 		}
 		return false; // if we get to the end of our array without any matches
 	}
-	public double getChance(String name) {
+
+	public double getWorstChance(Implicit prefImp) {
 		for (Implicit curr : potRolls) {
-			if (curr.equals(name))
-				return (double)curr.getWeight()/(double)poolSize;
+			if (curr.equals(prefImp.getEffect()))
+				return (double)curr.getWeight()/(double) poolSize;
+		}
+		return 0;
+	}
+
+	public double getBestChance(Implicit prefImp, int ilvl) {
+		ArrayList<Implicit> temp = filterRolls(ilvl);
+		int filterPool = 0;
+
+		for (Implicit curr : temp) {
+			filterPool += curr.getWeight();
+		}
+
+		for (Implicit curr : temp) {
+			if (curr.equals(prefImp.getEffect()))
+				return (double)curr.getWeight()/(double)filterPool;
 		}
 		return 0;
 	}
@@ -113,10 +130,42 @@ public class Item {
 		String output = "";
 		for (int i = 0; i < potRolls.size(); i++) {
 			DecimalFormat df = new DecimalFormat("##.###%");
-			double percent = (potRolls.get(i).getWeight()/(double)poolSize)*(double)1/6; // converting the weighted values to a percent
-			output += potRolls.get(i).toString() + "\n\tChance: " + df.format(percent) + "\n\tWeight: " + potRolls.get(i).getWeight();
+			double percent = (potRolls.get(i).getWeight()/(double) poolSize)*(double)1/6; // converting the weighted values to a percent
+			output += potRolls.get(i).getEffect() + "\n\tChance: " + df.format(percent) + "\n\tWeight: " + potRolls.get(i).getWeight();
 			output += "\n";
 		}
 		return output;
+	}
+
+	public int getMaxIlvl() {
+		return maxIlvl;
+	}
+
+	public ArrayList<Implicit> filterRolls(int ilvl) {
+		ArrayList<Implicit> temp = new ArrayList<>();
+
+
+		for (Implicit curr : potRolls) {
+			if (curr.getIlvl() <= ilvl) {
+				temp.add(curr);
+			}
+		}
+		return temp;
+	}
+
+	public String getBaseType() {
+		return baseType;
+	}
+
+	public double getResaleChance(){
+		switch (baseType) {
+			case "amulet":
+			case "belt":
+			case "ring":
+			case "quiver":
+				return 0.5; // these items can't roll sockets so theres no chance of rolling a white socket
+			default:
+				return 0.25;
+		}
 	}
 }
