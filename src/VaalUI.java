@@ -70,9 +70,9 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
                 infoPop.show(primaryStage);
             }
         });
-        */
-        info.setId("info-button");
 
+        //info.setId("info-button");
+        */
         // creating tooltips to help the user understand what information is being asked for
         initTool = new Tooltip("The value of your item with your selected implicits (in chaos).");
         corrTool = new Tooltip("The cost of purchasing an uncorrupted version of the item you are attempting to vaal (in chaos).");
