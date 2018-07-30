@@ -51,6 +51,8 @@ public class Item {
 			tags.addAll(Arrays.asList("gloves", "default"));
 		} else if (baseType.equals("helmet")) {
 			tags.addAll(Arrays.asList("helmet", "default"));
+		} else if (baseType.equals("jewel") || baseType.equals("abyss jewel")) { // jewels and abyss jewels share same rolls
+			tags.addAll(Arrays.asList("jewel", "default"));
 		} else if (baseType.equals("shield")) {
 			tags.addAll(Arrays.asList("shield", "default"));
 		} else if (baseType.equals("one hand axe")) {
@@ -59,8 +61,6 @@ public class Item {
 			tags.addAll(Arrays.asList("mace", "weapon", "one_hand_weapon", "default"));
 		} else if (baseType.equals("one hand sword")) {
 			tags.addAll(Arrays.asList("sword", "weapon", "one_hand_weapon", "default"));
-		} else if (baseType.equals("jewel")) {
-			tags.add("jewel");
 		} else if (baseType.equals("quiver")) {
 			tags.addAll(Arrays.asList("quiver", "default"));
 		} else if (baseType.equals("ring")) {
@@ -163,7 +163,7 @@ public class Item {
 			case "belt":
 			case "ring":
 			case "quiver":
-				return 0.5;
+				return 0.5; // these items can't roll sockets so theres no chance of rolling a white socket
 			default:
 				return 0.25;
 		}

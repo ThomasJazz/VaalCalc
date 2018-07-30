@@ -35,7 +35,6 @@ public class Driver {
 			String name = "";
 			String effect = "";
 
-
 			while ((line = reader.readLine()) != null){
 				if (line.equals("$")) {
 					line = reader.readLine();

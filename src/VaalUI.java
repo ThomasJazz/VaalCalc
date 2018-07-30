@@ -58,14 +58,13 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         infoPop.setY(200);
         infoPop.getContent().addAll(new Button("Test"));
 
-        // info button
+        /* info button
         info = new Button();
         info.setLayoutX(5);
         info.setLayoutY(5);
         info.setPrefHeight(24);
         info.setPrefWidth(24);
         info.setGraphic(infoView);
-        /*
         info.setOnAction(new EventHandler<ActionEvent>() {
             @Override public void handle(ActionEvent event) {
                 infoPop.show(primaryStage);
@@ -73,7 +72,6 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         });
         */
         info.setId("info-button");
-
 
         // creating tooltips to help the user understand what information is being asked for
         initTool = new Tooltip("The value of your item with your selected implicits (in chaos).");
@@ -141,9 +139,10 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         basetypes.getSelectionModel().select("-Item Basetype-");
         basetypes.setOnAction(this);
         basetypes.getItems().addAll( // user can either search for or select one of the options below
+                "Abyss Jewel",
                 "Amulet",
-                "Body Armour",
                 "Belt",
+                "Body Armour",
                 "Boots",
                 "Bow",
                 "Claw",
@@ -151,6 +150,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
                 "Fishing Rod",
                 "Gloves",
                 "Helmet",
+                "Jewel",
                 "One Hand Axe",
                 "One Hand Mace",
                 "One Hand Sword",
@@ -170,7 +170,7 @@ public class VaalUI extends Application implements EventHandler<ActionEvent> {
         group.setLayoutY(0);
         group.getChildren().addAll(basetypes, implicits);
         group.getChildren().addAll(initInvLabel, initInv, corrVal, corrValLabel, resaleLabel, resaleVal);
-        group.getChildren().addAll(calculate, reset, info);
+        group.getChildren().addAll(calculate, reset);
 
         // Scene set-up and assignment
         Scene scene = new Scene(group, 400, 600);
